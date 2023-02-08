@@ -17,14 +17,24 @@ def setColorRange( image ):
                 j[1] = 0
     return hsv2rgb(hsvImage) # Moet terug naar RGB want de viewer gebruikt geen HSV maar RGB waardes.
 
+def makeHueArray( image ):
+    hueArray = []
+    for i in image:
+        for j in i:
+            hueArray.append( j[0] )
+    return hueArray
+
 
 image = io.imread('C:/Users/tjezv/OneDrive/Afbeeldingen/London.jpg')
 setColorRange( image )
 
-fig, axs = plt.subplots(2, 3, figsize=(8,4))
+fig, axs = plt.subplots( 2, 3, figsize=(8,4) )
 
-axs[0, 0].imshow(image)
-axs[0, 1].imshow(setColorRange(image))
+axs[0, 0].imshow( image )
+axs[0, 1].imshow( setColorRange( image ) )
+
+axs[1, 0].hist( makeHueArray( rgb2hsv( image ) ) )
+axs[1, 1].hist( makeHueArray( rgb2hsv( setColorRange( image ) ) ) )
 
 plt.show()
 
