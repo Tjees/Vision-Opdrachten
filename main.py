@@ -1,10 +1,11 @@
 import numpy
-import matplotlib
+import matplotlib.pyplot as plt
 from skimage.color import rgb2hsv
 from skimage.color import hsv2rgb
 from skimage import data
 from skimage.viewer import ImageViewer
 from skimage import io
+from skimage import color
 
 def setColorRange( image ):
     hsvImage = rgb2hsv( image )
@@ -20,5 +21,12 @@ def setColorRange( image ):
 image = io.imread('C:/Users/tjezv/OneDrive/Afbeeldingen/London.jpg')
 setColorRange( image )
 
-viewer = ImageViewer(setColorRange(image))
-viewer.show()
+fig, axs = plt.subplots(2, 3, figsize=(8,4))
+
+axs[0, 0].imshow(image)
+axs[0, 1].imshow(setColorRange(image))
+
+plt.show()
+
+# viewer = ImageViewer(setColorRange(image))
+# viewer.show()
