@@ -21,7 +21,7 @@ def makeHueArray( image ):
     hueArray = []
     for i in image:
         for j in i:
-            hueArray.append( j[0] )
+            hueArray.append( j[0] * 360 ) # Hue value is 0 - 1 dus keer 360 want dan krijg je de hue.
     return hueArray
 
 
