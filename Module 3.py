@@ -68,13 +68,12 @@ edge_prewitt = filters.prewitt(grayimage)
 edge_sobel = filters.sobel(grayimage)
 edge_roberts = filters.roberts(grayimage)
 
-imageCanny = ndimage.rotate(grayimage, 15, mode='constant')
-imageCanny = ndimage.gaussian_filter(imageCanny, 4)
+imageCanny = ndimage.gaussian_filter(grayimage, 4)
 imageCanny = random_noise(imageCanny, mode='speckle', mean=0.1)
 
 # Compute the Canny filter for two values of sigma
 edge_canny1 = feature.canny(imageCanny)
-edge_canny2 = feature.canny(imageCanny, sigma=3)
+edge_canny2 = feature.canny(imageCanny, sigma=1.6)
 
 fig, axs = plt.subplots( 4, 3, figsize=(8,4) )
 
