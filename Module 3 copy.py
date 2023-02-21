@@ -9,6 +9,17 @@ from scipy import ndimage
 import math
 from skimage.util import random_noise
 from skimage import feature
+
+def convertImage( image ):
+    imageCopy = image
+    for row in imageCopy:
+        for i in range(len(row)):
+            if row[i] < 0:
+                row[i] *= -1
+            else:
+                row[i] *= 1
+    return imageCopy
+
 # Aparte imports voor functies weggehaald want is niet echt nodig.
 
 smooth=[[1/9,1/9,1/9],[1/9,1/9,1/9],[1/9,1/9,1/9]]
@@ -34,18 +45,26 @@ newImageSmooth=ndimage.convolve(newImageSmooth, smooth)
 
 prewittGx=ndimage.convolve(grayimage, prewittX)
 prewittGy=ndimage.convolve(grayimage, prewittY)
+prewittGx=convertImage(prewittGx)
+prewittGy=convertImage(prewittGy)
 resultPrewitt = np.sqrt( prewittGx ** 2 + prewittGy ** 2 )
 
 sobelGx=ndimage.convolve(grayimage, sobelX)
 sobelGy=ndimage.convolve(grayimage, sobelY)
+sobelGx=convertImage(sobelGx)
+sobelGy=convertImage(sobelGy)
 resultSobel = np.sqrt( sobelGx ** 2 + sobelGy ** 2 )
 
 robertsGx=ndimage.convolve(grayimage, robertsX)
 robertsGy=ndimage.convolve(grayimage, robertsY)
+robertsGx=convertImage(robertsGx)
+robertsGy=convertImage(robertsGy)
 resultRoberts = np.sqrt( robertsGx ** 2 + robertsGy ** 2 )
 
 testGx=ndimage.convolve(grayimage, robertsX)
 testGy=ndimage.convolve(grayimage, robertsY)
+testGx=convertImage(testGx)
+testGy=convertImage(testGy)
 resultTest = np.add( testGx, testGy )
 
 edge_prewitt = filters.prewitt(grayimage)
