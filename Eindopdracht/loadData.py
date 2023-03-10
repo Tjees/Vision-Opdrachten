@@ -8,76 +8,89 @@ from PIL import Image
 # Border maken met openCV.
 # Waarom list soms handiger is met appenden dan numpy array.
 # Beter manier om te croppen.
+# Voorbeeld van resizen met behouden van aspect ratio ( als width of height oneven is is aspect ratio niet precies behouden maar zo goed mogelijk.)
+
+# Notes:
+# Bij het maken van de grijze borders moet je aan beide kanten een border toevoegen,
+# Hierdoor kan je dus bij een oneven getal, bijvoorbeeld 153, een border size van 153/2 = 76,5 krijgen wat je dus moet afronden.
+# Hierdoor krijg je dus een width of height pixel te weinig en moet je die dus later toevoegen dus kan het does niet precies
+# in het midden omdat je niet aan beide kanten een halve pixel toe kan voegen.
+# Ongeveer hetzelfde geval bij het resizen maar daar kan je gewoon de size meegeven i.p.v. de shape * ratio en dan doet hij het automatisch,
+# de aspect ratio wordt dus waarschijnlijk niet precies behouden en zal dus met ongeveer een pixel afwijken. Maar maakt waarschijnlijk niet heel veel uit.
 
 def loadData():
-    # load the CSV file into a DataFrame
     df = pd.read_csv('C:/Users/tjezv/OneDrive/Desktop/Vision Opdrachten/Eindopdracht/annotation_car_plate_train.csv')
-    file = df['file'].to_numpy() #Kan een list maken van de kolom maar is misschien minder flexibel. #file = list(df['file'])
+    file = df['file'].to_numpy()
     xMin = df['xmin'].to_numpy()
     xMax = df['xmax'].to_numpy()
     yMin = df['ymin'].to_numpy()
     yMax = df['ymax'].to_numpy()
-    return file, xMin, xMax, yMin, yMax
+    label = df['name'].to_numpy()
+    return file, xMin, xMax, yMin, yMax, label
 
 def cutOutBBox( i ):
-    #Load image data.
-    file, xMin, xMax, yMin, yMax = loadData()
-    file, xMin, xMax, yMin, yMax = file[i], xMin[i], xMax[i], yMin[i], yMax[i]
+    file, xMin, xMax, yMin, yMax, label = loadData()
+    file, xMin, xMax, yMin, yMax, label = file[i], xMin[i], xMax[i], yMin[i], yMax[i], label[i]
 
-    #Load actual image.
     path = 'C:/Users/tjezv/OneDrive/Desktop/Vision Opdrachten/Eindopdracht/images/' + str(file) + '.jpg'
-    # io.imread() doet het goed en cv.imread() verwisseld kleuren. Cv2 gebruikt geen RGB als default maar BGR.
     image = cv.imread(path)
-    image = cv.cvtColor(image, cv.COLOR_BGR2RGB) # Dus na het inladen eerst van BGR naar RGB converteren.
+    image = cv.cvtColor(image, cv.COLOR_BGR2RGB)
 
-    #Crop image in y direction.
-    #yCrop = image[yMin:yMax]
     croppedImage = image[yMin:yMax,xMin:xMax]
 
-    # Crop yCrop image in x direction.
-    # xCrop = [] # Normale array omdat numpy array fixed size is dus is vervelend (moet eerst size bepalen).
-    # for i in range(len(yCrop)):
-    #     xCrop.append(yCrop[i][xMin:xMax])
-    #xCrop = yCrop[:,xMin:xMax]
-
-    # Return final cropped image.
-    return np.array(croppedImage) # Final image kan wel numpy array zijn want is fixed size en wordt ook niet later aangepast.
+    return np.array(croppedImage)
 
 def resizeBBoxImage( img, size ):
     newImage = img
     if( newImage.shape[0] > size[1] ):
-        middle = (newImage.shape[0]-1)/2 # Around middle haha.
-        newImage = newImage[ int(middle - (size[1]/2)) : int(middle + (size[1]/2))]
-
+        ratio = size[1] / newImage.shape[0]
+        newImage = cv.resize(newImage,(int(newImage.shape[1] * ratio), size[1]))
     if( newImage.shape[1] > size[0] ):
-        middle = (newImage.shape[1]-1)/2 # Around middle haha.
-        # Misschien nog aanpassen/vervangen met andere implementatie.
-        newImage = newImage[: , int(middle - (size[0]/2)) : int(middle + (size[0]/2))] # In dit geval wel handiger/makkelijker haha.
+        ratio = size[0] / newImage.shape[1]
+        newImage = cv.resize(newImage,(size[0], int(newImage.shape[0] * ratio)))
 
+    return np.array(newImage)
+
+def cropBBoxImage( img, size ):
+    newImage = img
+    if( newImage.shape[0] > size[1] ):
+        newImage = newImage[ int((newImage.shape[0]-size[1])/2) : int(img.shape[0]-((newImage.shape[0]-size[1])/2)) ]
+    if( newImage.shape[1] > size[0] ):
+        newImage = newImage[ :, int((newImage.shape[1]-size[0])/2) : int(img.shape[1]-((newImage.shape[1]-size[0])/2))]
+    
     return np.array(newImage)
 
 def borderBBoxImage( img, size ):
     newImage = img
     borderColor = (125, 125, 125)
     if( newImage.shape[0] < size[1] ):
-        borderY = int((size[1]-newImage.shape[0])/2) # Border voor top en bottom.
+        borderY = int((size[1]-newImage.shape[0])/2)
         newImage = cv.copyMakeBorder(newImage,borderY,borderY,0,0,cv.BORDER_CONSTANT,value=borderColor)
 
     if( newImage.shape[1] < size[0] ):
-        borderX = int((size[0]-newImage.shape[1])/2) # Border voor links en rechts.
+        borderX = int((size[0]-newImage.shape[1])/2)
         newImage = cv.copyMakeBorder(newImage,0,0,borderX,borderX,cv.BORDER_CONSTANT,value=borderColor)
 
-    return np.array(newImage) # constantBorderImage.
+    return np.array(newImage)
 
 def convertBBoxImage( img, size ):
     convertedImage = borderBBoxImage( resizeBBoxImage( img, size ), size )
     borderColor = (125, 125, 125)
-    if( convertedImage.shape[0] < size[1] ): # Shape is altijd 244 of kleiner (243) want rond af naar beneden en niet naar boven.
-        convertedImage = cv.copyMakeBorder(convertedImage,0,1,0,0,cv.BORDER_CONSTANT,value=borderColor) # Rij toevoegen aan bottom.
-    if( convertedImage.shape[1] < size[0] ): # Shape is altijd 244 of kleiner (243) want rond af naar beneden en niet naar boven.
-        convertedImage = cv.copyMakeBorder(convertedImage,0,0,0,1,cv.BORDER_CONSTANT,value=borderColor) # Rij toevoegen aan rechts.
+    if( convertedImage.shape[0] < size[1] ):
+        convertedImage = cv.copyMakeBorder(convertedImage,0,1,0,0,cv.BORDER_CONSTANT,value=borderColor)
+    if( convertedImage.shape[1] < size[0] ):
+        convertedImage = cv.copyMakeBorder(convertedImage,0,0,0,1,cv.BORDER_CONSTANT,value=borderColor)
 
     return np.array(convertedImage)
+
+def loadDataSet():
+    data, labels = [], []
+    for i in range(len(loadData()[0])):
+        data.append(convertBBoxImage(cutOutBBox(i), (224,224)))
+        if( loadData()[5][i] == "plate" ):
+            labels.append(0)
+
+    return np.array(data), np.array(labels)
 
 def saveCroppedImage( croppedImage, filePath, imageName ):
     im = Image.fromarray(croppedImage)
