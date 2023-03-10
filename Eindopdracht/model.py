@@ -9,6 +9,9 @@ from keras import layers
 from keras.models import Sequential
 from keras.models import save_model
 
+#Notes:
+# Kan eventueel model als een file exporteren.
+
 def trainModel():
     X, y = loadDataSet()
 
