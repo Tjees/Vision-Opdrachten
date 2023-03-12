@@ -88,7 +88,12 @@ def loadDataSet():
     for i in range(len(loadData()[0])):
         data.append(convertBBoxImage(cutOutBBox(i), (224,224)))
         if( loadData()[5][i] == "plate" ):
+            labels.append(1)
+        else:
             labels.append(0)
+    for file in loadData()[0]:
+        data.append(np.array(Image.open('C:/Users/tjezv/OneDrive/Desktop/Vision Opdrachten/Eindopdracht/images/' + str(file) + ".jpg").resize((224,224))))
+        labels.append(0)
 
     return np.array(data), np.array(labels)
 
