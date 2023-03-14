@@ -16,6 +16,7 @@ from keras.utils import normalize
 
 def trainModel():
     X, y = loadDataSet()
+    print(X.shape, y.shape)
 
     X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=0)
 
@@ -44,7 +45,7 @@ def trainModel():
                   loss='binary_crossentropy',
                   metrics=['acc'])
     
-    history = model.fit(X_train_scaled, y_train, epochs=20, validation_data=(X_test_scaled, y_test))  # commented out, because we’re gonna train with augmentation instead, below:
+    history = model.fit(X_train_scaled, y_train, epochs=10, validation_data=(X_test_scaled, y_test))  # commented out, because we’re gonna train with augmentation instead, below:
 
     plt.plot(history.history['acc'])
     plt.plot(history.history['val_acc'])

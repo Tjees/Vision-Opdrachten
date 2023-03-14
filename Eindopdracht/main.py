@@ -18,7 +18,13 @@ from keras.models import model_from_json
 
 # Elk plaatje croppen en opslaan als nieuw plaatje (file).
 # for i in range(len(loadData()[0])):
-#     saveCroppedImage( convertBBoxImage(cutOutBBox(i), (224,224)), 'C:/Users/tjezv/OneDrive/Desktop/Vision Opdrachten/Eindopdracht/dataset', 'plate_' + loadData()[0][i] + '.jpg') # Image naam moet zelfde naar als originele image bevatten, anders kan bijvoorbeeld plate0 de kentekenplaat van img_2297 bevatten.
+#     saveCroppedImage( convertBBoxImage(cutOutBBox(i), (224,224)), 'C:/Users/tjezv/OneDrive/Desktop/Vision Opdrachten/Eindopdracht/dataset/Plates/', 'plate_' + loadData()[0][i] + '.jpg') # Image naam moet zelfde naar als originele image bevatten, anders kan bijvoorbeeld plate0 de kentekenplaat van img_2297 bevatten.
+
+# file, xMin, xMax, yMin, yMax, label = loadData()
+# for i in range(len(loadData()[0])):
+#     image = np.array(Image.open("C:/Users/tjezv/OneDrive/Desktop/Vision Opdrachten/Eindopdracht/images/" + str(file[i]) + ".jpg"))
+#     image = cutOutRandom( image, (224, 224), xMin[i], xMax[i], yMin[i], yMax[i] )
+#     saveCroppedImage( image, 'C:/Users/tjezv/OneDrive/Desktop/Vision Opdrachten/Eindopdracht/dataset/No Plates/', 'no_plate_' + loadData()[0][i] + '.jpg') # Image naam moet zelfde naar als originele image bevatten, anders kan bijvoorbeeld plate0 de kentekenplaat van img_2297 bevatten.
 
 json_file = open('C:/Users/tjezv/OneDrive/Desktop/Vision Opdrachten/Eindopdracht/my_model_arch.json', 'r')
 classifier = model_from_json(json_file.read(), custom_objects={'KerasLayer':hub.KerasLayer})
@@ -44,6 +50,10 @@ print(result.shape)
 
 classifier.summary()
 
-image = convertBBoxImage(cutOutBBox(0), (224,224))
-print(image.shape)
-plt.show()
+# file, xMin, xMax, yMin, yMax, label = loadData()
+# image = np.array(Image.open("C:/Users/tjezv/OneDrive/Desktop/Vision Opdrachten/Eindopdracht/images/" + str(file[0]) + ".jpg"))
+
+# image = cutOutRandom( image, (224, 224), xMin[0], xMax[0], yMin[0], yMax[0] )
+# print(image.shape)
+# plt.imshow(image)
+# plt.show()
