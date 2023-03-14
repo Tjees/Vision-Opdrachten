@@ -23,6 +23,8 @@ import random
 # Het beste is waarschijnlijk om een functie te maken die per plaatje op een random plek 224x224 kiest en die returned. Dan heb je
 # net zo veel plaatjes waar geen kentekens op staan dan waar wel kentekens op staan en het zijn random plekken dus niet steeds dezelfde. ( Heb nu ongeveer 300 waar wel iets op staat en 1200 waar niets op staan. ).
 
+# ============================== Data inladen. ==============================
+
 # Laadt de data in vanuit CSV file.
 def loadData():
     df = pd.read_csv('C:/Users/tjezv/OneDrive/Desktop/Vision Opdrachten/Eindopdracht/annotation_car_plate_train.csv')
@@ -33,6 +35,8 @@ def loadData():
     yMax = df['ymax'].to_numpy()
     label = df['name'].to_numpy()
     return file, xMin, xMax, yMin, yMax, label
+
+# ============================== Bounding box uitknippen. ==============================
 
 # Knipt de bounding box uit het plaatje.
 def cutOutBBox( i ):
@@ -46,6 +50,8 @@ def cutOutBBox( i ):
     croppedImage = image[yMin:yMax,xMin:xMax]
 
     return np.array(croppedImage)
+
+# ============================== Uitgeknipte bounding box aanpassen. ==============================
 
 # Resized de bounding box en behoudt de aspect ratio ( dus het hele bounding box plaatje ).
 def resizeBBoxImage( img, size ):
@@ -96,6 +102,8 @@ def convertBBoxImage( img, size ):
 
     return np.array(convertedImage)
 
+# ============================== Plaatjes inladen waar niks op staat. ==============================
+
 # Knipt de hoeken uit van de image, te gebruiken met de originele image om backgrounds te maken maar alleen handig als het object
 # rond het midden zit. Is wel makkelijker in sommige gevallen. Ook is het sneller ( want je hoeft niet voor elk stukje te checken of de bounding box erin zit ).
 def cutOutCorners( img, size ):
@@ -135,6 +143,8 @@ def cutOutRandom( img, size, bboxXMin, bboxXMax, bboxYMin, bboxYMax ):
     newImage = img[randomYMin:randomYMax, randomXMin:randomXMax]
     return np.array(newImage)
 
+# ============================== Nieuwe dataset maken. ==============================
+
 # Laadt alle converted images in de dataset met bijbehorende labels. Dus maakt een nieuwe dataset met converted images.
 def loadDataSet():
     file, xMin, xMax, yMin, yMax, label = loadData()
@@ -153,6 +163,8 @@ def loadDataSet():
         labels.append(0)
 
     return np.array(data), np.array(labels)
+
+# ============================== Data Opslaan. ==============================
 
 # Functie om afbeeldingen op te slaan als file.
 def saveCroppedImage( croppedImage, filePath, imageName ):
