@@ -23,6 +23,9 @@ import random
 # Het beste is waarschijnlijk om een functie te maken die per plaatje op een random plek 224x224 kiest en die returned. Dan heb je
 # net zo veel plaatjes waar geen kentekens op staan dan waar wel kentekens op staan en het zijn random plekken dus niet steeds dezelfde. ( Heb nu ongeveer 300 waar wel iets op staat en 1200 waar niets op staan. ).
 
+# ============================== Data inladen. ==============================
+
+# Laadt de data in vanuit CSV file.
 def loadData():
     df = pd.read_csv('C:/Users/tjezv/OneDrive/Desktop/Vision Opdrachten/Eindopdracht/annotation_car_plate_train.csv')
     file = df['file'].to_numpy()
@@ -33,6 +36,9 @@ def loadData():
     label = df['name'].to_numpy()
     return file, xMin, xMax, yMin, yMax, label
 
+# ============================== Bounding box uitknippen. ==============================
+
+# Knipt de bounding box uit het plaatje.
 def cutOutBBox( i ):
     file, xMin, xMax, yMin, yMax, label = loadData()
     file, xMin, xMax, yMin, yMax, label = file[i], xMin[i], xMax[i], yMin[i], yMax[i], label[i]
@@ -45,6 +51,9 @@ def cutOutBBox( i ):
 
     return np.array(croppedImage)
 
+# ============================== Uitgeknipte bounding box aanpassen. ==============================
+
+# Resized de bounding box en behoudt de aspect ratio ( dus het hele bounding box plaatje ).
 def resizeBBoxImage( img, size ):
     newImage = img
     if( newImage.shape[0] > size[1] ):
@@ -56,6 +65,7 @@ def resizeBBoxImage( img, size ):
 
     return np.array(newImage)
 
+# Resized de bounding box maar behoudt detail en kapt dus een deel van het bounding box plaatje af.
 def cropBBoxImage( img, size ):
     newImage = img
     if( newImage.shape[0] > size[1] ):
@@ -65,6 +75,7 @@ def cropBBoxImage( img, size ):
     
     return np.array(newImage)
 
+# Voegt grijze borders toe aan de image van gelijke grote ( dus halve pixels worden afgerond naar beneden ).
 def borderBBoxImage( img, size ):
     newImage = img
     borderColor = (125, 125, 125)
@@ -76,19 +87,25 @@ def borderBBoxImage( img, size ):
         borderX = int((size[0]-newImage.shape[1])/2)
         newImage = cv.copyMakeBorder(newImage,0,0,borderX,borderX,cv.BORDER_CONSTANT,value=borderColor)
 
-    if( newImage.shape[0] < size[1] ):
-        newImage = cv.copyMakeBorder(newImage,0,1,0,0,cv.BORDER_CONSTANT,value=borderColor)
-
-    if( newImage.shape[1] < size[0] ):
-        newImage = cv.copyMakeBorder(newImage,0,0,0,1,cv.BORDER_CONSTANT,value=borderColor)
-
     return np.array(newImage)
 
+# Convert de bbox image ( resized en voegt borders toe aan alle kanten ) en checkt of de image wel voldoet aan de size
+# en voegt anders nog een pixel grote border toe ( dus die halve pixels die niet aan beide kanten konden worden neergezet
+# worden bij elkaar opgeteld en aan een kant toegevoegd ).
 def convertBBoxImage( img, size ):
     convertedImage = borderBBoxImage( resizeBBoxImage( img, size ), size )
+    borderColor = (125, 125, 125)
+    if( convertedImage.shape[0] < size[1] ):
+        convertedImage = cv.copyMakeBorder(convertedImage,0,1,0,0,cv.BORDER_CONSTANT,value=borderColor)
+    if( convertedImage.shape[1] < size[0] ):
+        convertedImage = cv.copyMakeBorder(convertedImage,0,0,0,1,cv.BORDER_CONSTANT,value=borderColor)
 
     return np.array(convertedImage)
 
+# ============================== Plaatjes inladen waar niks op staat. ==============================
+
+# Knipt de hoeken uit van de image, te gebruiken met de originele image om backgrounds te maken maar alleen handig als het object
+# rond het midden zit. Is wel makkelijker in sommige gevallen. Ook is het sneller ( want je hoeft niet voor elk stukje te checken of de bounding box erin zit ).
 def cutOutCorners( img, size ):
     corners = []
     topLeftCorner = img[0:size[1], 0:size[0]]
@@ -101,6 +118,7 @@ def cutOutCorners( img, size ):
     corners.append( bottomRightCorner )
     return np.array(corners)
 
+# Checken of de random image de bbox image bevat.
 def checkBBoxIntersect( bboxX, bboxY, randomX, randomY):
     for y in range(randomY[0], randomY[1]):
         for x in range( randomX[0], randomX[1] ):
@@ -108,6 +126,8 @@ def checkBBoxIntersect( bboxX, bboxY, randomX, randomY):
                 return True
     return False
 
+# Random stukje van de image uitknippen om als background te gebruiken, handiger dan de corners want checkt of het stukje niet in de
+# bounding box zit en is ook random dus is handiger in sommige gevallen.
 def cutOutRandom( img, size, bboxXMin, bboxXMax, bboxYMin, bboxYMax ):
     randomXMin = random.randint(0, img.shape[1]-size[0])
     randomYMin = random.randint(0, img.shape[0]-size[1])
@@ -123,6 +143,9 @@ def cutOutRandom( img, size, bboxXMin, bboxXMax, bboxYMin, bboxYMax ):
     newImage = img[randomYMin:randomYMax, randomXMin:randomXMax]
     return np.array(newImage)
 
+# ============================== Nieuwe dataset maken. ==============================
+
+# Laadt alle converted images in de dataset met bijbehorende labels. Dus maakt een nieuwe dataset met converted images.
 def loadDataSet():
     file, xMin, xMax, yMin, yMax, label = loadData()
     data, labels = [], []
@@ -141,6 +164,9 @@ def loadDataSet():
 
     return np.array(data), np.array(labels)
 
+# ============================== Data Opslaan. ==============================
+
+# Functie om afbeeldingen op te slaan als file.
 def saveCroppedImage( croppedImage, filePath, imageName ):
     im = Image.fromarray(croppedImage)
     im.save(filePath + '/' + imageName)
