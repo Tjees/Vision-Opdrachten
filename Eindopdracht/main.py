@@ -1,5 +1,6 @@
 from loadData import *
 from model import *
+from candidates import *
 import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
@@ -37,14 +38,20 @@ classifier.compile(
 
 # classifier = trainModel()
 
-license_plate = Image.open('C:/Users/tjezv/OneDrive/Desktop/Vision Opdrachten/Transfer Test/plate.jpg').resize((224,224))
-print(license_plate)
+license_plate = np.array(Image.open('C:/Users/tjezv/OneDrive/Desktop/Vision Opdrachten/Transfer Test/Car-Number-Plate.jpg'))
+license_plate_candidate, bbox = testCandidate( np.array(license_plate) )
+license_plate_candidate = convertBBoxImage( license_plate_candidate, (224, 224) )
+print(license_plate_candidate)
 
-license_plate = np.array(license_plate)/255.0
-print(license_plate.shape)
-print((license_plate[np.newaxis, ...]).shape)
+license_plate_candidate = np.array(license_plate_candidate)/255.0
+print(license_plate_candidate.shape)
+print((license_plate_candidate[np.newaxis, ...]).shape)
 
-result = classifier.predict(license_plate[np.newaxis, ...])
+result = classifier.predict(license_plate_candidate[np.newaxis, ...])
+
+if result[0] > 0.7:
+    cv.rectangle( license_plate, (bbox[0], bbox[2]), (bbox[1], bbox[3]), (255,0,0), 3 )
+
 print(result)
 print(result.shape)
 
@@ -57,3 +64,5 @@ classifier.summary()
 # print(image.shape)
 # plt.imshow(image)
 # plt.show()
+plt.imshow(license_plate)
+plt.show()
