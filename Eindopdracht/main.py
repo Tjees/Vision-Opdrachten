@@ -39,16 +39,23 @@ classifier.compile(
 # classifier = trainModel()
 
 license_plate = np.array(Image.open('C:/Users/tjezv/OneDrive/Desktop/Vision Opdrachten/Transfer Test/car.jpg'))
-license_plate_candidates, bboxes = sweepCandidates( np.array(license_plate), (320, 240))
+license_plate_candidates, bboxes = sweepCandidates( np.array(license_plate), (720, 240))
 
+results = []
+bboxesResults = []
 for i in range(len(license_plate_candidates)-1):
     print(license_plate_candidates[i].shape)
     license_plate_candidate = convertBBoxImage( license_plate_candidates[i], (224, 224) )
     license_plate_candidate = np.array(license_plate_candidate)/255.0
     print(license_plate_candidate.shape)
-    if classifier.predict(license_plate_candidate[np.newaxis, ...]) > 0.85:
-        cv.rectangle( license_plate, (bboxes[i][0], bboxes[i][2]), (bboxes[i][1], bboxes[i][3]), (255,0,0), 3 )
-        # break
+    results.append( classifier.predict(license_plate_candidate[np.newaxis, ...])[0] )
+    bboxesResults.append( bboxes[i] )
+
+maxIndex = results.index(max(results))
+print(results[maxIndex])
+if results[maxIndex] > 0.85:
+    cv.rectangle( license_plate, (bboxes[maxIndex][0], bboxes[maxIndex][2]), (bboxes[maxIndex][1], bboxes[maxIndex][3]), (255,0,0), 3 )
+# break
 
 # result = classifier.predict(license_plate_candidate[np.newaxis, ...])
 # if result[0] > 0.7:
