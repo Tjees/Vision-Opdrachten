@@ -126,17 +126,18 @@ def cutOutRandom( img, size, bboxXMin, bboxXMax, bboxYMin, bboxYMax ):
 def loadDataSet():
     file, xMin, xMax, yMin, yMax, label = loadData()
     data, labels = [], []
-    for i in range(len(loadData()[0])):
-        data.append(convertBBoxImage(cutOutBBox(i), (224,224)))
-        if( loadData()[5][i] == "plate" ):
+    for i in range(len(file)):
+        imagePlate = cv.imread("C:/Users/tjezv/OneDrive/Desktop/Vision Opdrachten/Eindopdracht/dataset/Plates/" + "plate_" + str(file[i]) + ".jpg")
+        imagePlate = cv.cvtColor(imagePlate, cv.COLOR_BGR2RGB)
+        data.append(np.array(imagePlate))
+        if( label[i] == "plate" ):
             labels.append(1)
         else:
             labels.append(0)
-    for i in range(len(loadData()[0])):
-        image = cv.imread("C:/Users/tjezv/OneDrive/Desktop/Vision Opdrachten/Eindopdracht/images/" + str(file[i]) + ".jpg")
-        image = cv.cvtColor(image, cv.COLOR_BGR2RGB)
-        image = cutOutRandom( image, (224, 224), xMin[i], xMax[i], yMin[i], yMax[i] )
-        data.append( image )
+    for i in range(len(file)):
+        imageNoPlate = cv.imread("C:/Users/tjezv/OneDrive/Desktop/Vision Opdrachten/Eindopdracht/dataset/No Plates/" + "no_plate_" + str(file[i]) + ".jpg")
+        imageNoPlate = cv.cvtColor(imageNoPlate, cv.COLOR_BGR2RGB)
+        data.append( imageNoPlate )
         labels.append(0)
 
     return np.array(data), np.array(labels)
