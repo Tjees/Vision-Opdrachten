@@ -38,9 +38,28 @@ classifier.compile(
     loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
     metrics=['acc'])
 
-license_plate = cv.imread('C:/Users/tjezv/OneDrive/Desktop/Vision Opdrachten/Transfer Test/car.jpg')
+license_plate = cv.imread('C:/Users/tjezv/OneDrive/Desktop/Vision Opdrachten/Transfer Test/car2.jpg')
 license_plate = cv.cvtColor(license_plate, cv.COLOR_BGR2RGB)
-license_plate_candidates, bboxes = sweepCandidates( np.array(license_plate), (720, 240))
+license_plate_candidates, bboxes = createCandidatePositions(license_plate)
+
+# for i in range(len(license_plate_candidates)-1):
+#     print( license_plate_candidates[i].shape )
+#     print( bboxes[i] )
+#     cv.rectangle( license_plate, (bboxes[i][0], bboxes[i][2]), (bboxes[i][1], bboxes[i][3]), (255,0,0), 3 )
+
+print(license_plate_candidates[0].shape)
+
+convertedCandidates = []
+for i in range(len(license_plate_candidates)-1):
+    convertedCandidates.append(convertBBoxImage(license_plate_candidates[i], (224,224)))
+
+license_plate_candidates = np.array(convertedCandidates)/255.0
+
+print(license_plate_candidates.shape)
+
+results = classifier.predict(license_plate_candidates)
+
+print(results)
 
 # results = []
 # bboxesResults = []
@@ -58,11 +77,10 @@ license_plate_candidates, bboxes = sweepCandidates( np.array(license_plate), (72
 #     cv.rectangle( license_plate, (bboxes[maxIndex][0], bboxes[maxIndex][2]), (bboxes[maxIndex][1], bboxes[maxIndex][3]), (255,0,0), 3 )
 # break
 
-# license_plate = createClustering(license_plate)
-# for i in range(len(results)):
-#     if results[i][0] > 0.9:
-#         cv.rectangle( license_plate, (bboxesResults[i][0], bboxesResults[i][2]), (bboxesResults[i][1], bboxesResults[i][3]), (255,0,0), 3 )
-#         print(results[i][0])
+for i in range(len(results)):
+    if results[i][0] > 0.4:
+        cv.rectangle( license_plate, (bboxes[i][0], bboxes[i][2]), (bboxes[i][1], bboxes[i][3]), (255,0,0), 3 )
+        print(results[i][0])
 
 # result = classifier.predict(license_plate_candidate[np.newaxis, ...])
 
@@ -78,5 +96,5 @@ classifier.summary()
 # print(image.shape)
 # plt.imshow(image)
 # plt.show()
-plt.imshow(createHoughLine(license_plate))
+plt.imshow(license_plate)
 plt.show()

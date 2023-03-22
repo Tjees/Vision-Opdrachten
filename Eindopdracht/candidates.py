@@ -32,7 +32,7 @@ def sweepCandidates( img, size ):
     
     return np.array(candidates), np.array(bboxes)
 
-def createHoughLine( img ):
+def createHoughLines( img ):
     gray_image = cv.cvtColor(img,cv.COLOR_BGR2GRAY)
     clustered_image = createCandidatePositions(createClustering(img))
     edges = cv.Canny(clustered_image,400,425,apertureSize = 3)
@@ -47,10 +47,11 @@ def createHoughLine( img ):
             x0 = a*rho
             y0 = b*rho
             x1 = int(x0 + maxLineLengthX*(-b))
-            y1 = int(y0 + maxLineLengthY*(a))
+            y1 = int(y0 + maxLineLengthX*(a))
             x2 = int(x0 - maxLineLengthX*(-b))
-            y2 = int(y0 - maxLineLengthY*(a))
+            y2 = int(y0 - maxLineLengthX*(a))
 
+            #cv.circle(img, (int(x0), int(y0)), 3, (255,0,0),2)
             cv.line(img,(x1,y1),(x2,y2),(255,0,0),2)
 
     # Vertical lines
@@ -82,14 +83,21 @@ def createClustering( img ):
     return res
 
 def createCandidatePositions(img):
+    candidates = []
+    bboxes = []
     # convert image to grayscale image
     gray_image = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
 
     # for i in range(10):
     #     cv.GaussianBlur(gray_image,(5,5),0)
 
-    kernel = np.ones((50,50),np.uint8)
-    closing = cv.morphologyEx(gray_image, cv.MORPH_CLOSE, kernel)
+    kernelClose = np.ones((50,50),np.uint8)
+    kernelErode = np.ones((20,20),np.uint8)
+    # kernelClose = np.ones((img.shape[1]//500,img.shape[0]//500),np.uint8)
+    # kernelErode = np.ones((img.shape[1]//300,img.shape[1]//300),np.uint8)
+    closing = cv.morphologyEx(gray_image, cv.MORPH_CLOSE, kernelClose)
+    closing = cv.morphologyEx(closing, cv.MORPH_ERODE, kernelErode)
+    closing = createClustering(closing)
 
     edges = cv.Canny(closing,400,425,apertureSize = 3)
 
@@ -112,10 +120,18 @@ def createCandidatePositions(img):
             xMax = cX + size[0]
             yMin = cY - size[1]
             yMax = cY + size[1]
-            cv.rectangle( img, (xMin+(size[0]//4), yMin+(size[0]//4)), (xMax-(size[0]//4), yMax-(size[0]//4)), (255,0,0), 3 )
-            cv.rectangle( img, (xMin+(size[0]//2), yMin+(size[0]//2)), (xMax-(size[0]//2), yMax-(size[0]//2)), (255,0,0), 3 )
-            cv.rectangle( img, (xMin, yMin), (xMax, yMax), (255,0,0), 3 )
+
+            # cv.rectangle( img, (xMin+(size[0]//4), yMin+(size[0]//4)), (xMax-(size[0]//4), yMax-(size[0]//4)), (255,0,0), 3 )
+            if( yMin > 0 and yMax > 0 and xMin > 0 and yMax > 0 ):
+                candidates.append(img[yMin:yMax, xMin:xMax])
+                bboxes.append((xMin, xMax, yMin, yMax))
+                candidates.append(img[yMin+(size[0]//4):yMax-(size[0]//4), xMin+(size[0]//4):xMax-(size[0]//4)])
+                bboxes.append((xMin+(size[0]//4), xMax-(size[0]//4), yMin+(size[0]//4), yMax-(size[0]//4)))
+            # cv.rectangle( img, (xMin+(size[0]//2), yMin+(size[0]//2)), (xMax-(size[0]//2), yMax-(size[0]//2)), (255,0,0), 3 )
+            # cv.rectangle( img, (xMin, yMin), (xMax, yMax), (255,0,0), 3 )
         else:
             cX, cY = 0, 0
 
-    return closing
+    return np.array(candidates), np.array(bboxes)
+    # return img
+    # return cv.cvtColor(closing, cv.COLOR_GRAY2RGB)
