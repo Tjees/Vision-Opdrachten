@@ -91,10 +91,12 @@ def createCandidatePositions(img):
     # for i in range(10):
     #     cv.GaussianBlur(gray_image,(5,5),0)
 
-    kernelClose = np.ones((50,50),np.uint8)
-    kernelErode = np.ones((20,20),np.uint8)
+    # kernelClose = np.ones((50,50),np.uint8)
+    # kernelErode = np.ones((20,20),np.uint8)
     # kernelClose = np.ones((img.shape[1]//500,img.shape[0]//500),np.uint8)
-    # kernelErode = np.ones((img.shape[1]//300,img.shape[1]//300),np.uint8)
+    # kernelErode = np.ones((img.shape[1]//300,img.shape[0]//300),np.uint8)
+    kernelClose = np.ones((int(img.shape[1]*0.0125),int(img.shape[0]*0.015)),np.uint8)
+    kernelErode = np.ones((int(img.shape[1]*0.005),int(img.shape[0]*0.0065)),np.uint8)
     closing = cv.morphologyEx(gray_image, cv.MORPH_CLOSE, kernelClose)
     closing = cv.morphologyEx(closing, cv.MORPH_ERODE, kernelErode)
     closing = createClustering(closing)
@@ -115,20 +117,22 @@ def createCandidatePositions(img):
             cX = int(M["m10"] / M["m00"])
             cY = int(M["m01"] / M["m00"])
             # cv.rectangle( img, (cX,cY), (cX+10, cY+10), (255,0,0), 3 )
-            size = (448,224)
+            # size = (448,224)
+            size = (int(img.shape[1]*0.115),int(img.shape[0]*0.075))
             xMin = cX - size[0]
             xMax = cX + size[0]
             yMin = cY - size[1]
             yMax = cY + size[1]
 
             # cv.rectangle( img, (xMin+(size[0]//4), yMin+(size[0]//4)), (xMax-(size[0]//4), yMax-(size[0]//4)), (255,0,0), 3 )
+            # cv.rectangle( img, (xMin, yMin), (xMax, yMax), (255,0,0), 3 )
+
             if( yMin > 0 and yMax > 0 and xMin > 0 and yMax > 0 ):
                 candidates.append(img[yMin:yMax, xMin:xMax])
                 bboxes.append((xMin, xMax, yMin, yMax))
                 candidates.append(img[yMin+(size[0]//4):yMax-(size[0]//4), xMin+(size[0]//4):xMax-(size[0]//4)])
                 bboxes.append((xMin+(size[0]//4), xMax-(size[0]//4), yMin+(size[0]//4), yMax-(size[0]//4)))
             # cv.rectangle( img, (xMin+(size[0]//2), yMin+(size[0]//2)), (xMax-(size[0]//2), yMax-(size[0]//2)), (255,0,0), 3 )
-            # cv.rectangle( img, (xMin, yMin), (xMax, yMax), (255,0,0), 3 )
         else:
             cX, cY = 0, 0
 
