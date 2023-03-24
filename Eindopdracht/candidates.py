@@ -81,6 +81,19 @@ def createClustering( img ):
     # centers[0] = [0,0,0]
     # centers[1] = [255,255,255]
 
+
+    # Notes:
+    # Nu pak ik alle centers die waardes hoger dan [100,100,100] (grijs) bevatten en zet die als wit neer en voeg die samen.
+    # Dit is makkelijker maar misschien minder nauwkeurig.
+    # Kan eventueel voor elke center die ik wil (of boven de threshold) laten staan en de andere centers uitzetten en dan
+    # aparte afbeeldingen maken voor elke center en die laten controleren. Dit is misschien iets beter 
+    # want dan is er misschien minder kans dat dingen aan elkaar gaan zitten tijdens het dilaten en eroden.
+    # Dit kost misschien wel meer tijd om te doen en is misschien niet veel nauwkeuriger maar kan het testen.
+    # Vanwege het gebruik van meerdere centers is het nu misschien wel makkelijker om witte kentekens te scheiden van
+    # bijvoorbeeld rode of groene auto's, vooral auto's die niet (licht)grijs of wit zijn. Door middel van
+    # aparte afbeeldingen per center is het misschien makkelijker omdat als de auto bijvoorbeeld grijs is die kleuren
+    # niet bij elkaar in dezelfde abeelding zitten. Dit kan later getest worden.
+
     # thresWhite = list(centers[3])
     thresWhite = [100,100,100]
     thresYellow = [150,150,50]
