@@ -38,12 +38,14 @@ classifier.compile(
     loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
     metrics=['acc'])
 
-license_plate = cv.imread('C:/Users/tjezv/OneDrive/Desktop/Vision Opdrachten/Transfer Test/car8.jpg')
+license_plate = cv.imread('C:/Users/tjezv/OneDrive/Desktop/Vision Opdrachten/Transfer Test/car.jpg')
 license_plate = cv.cvtColor(license_plate, cv.COLOR_BGR2RGB)
 
 # license_plate = cv.resize(license_plate, (1920,1080), cv.INTER_AREA)
 
 license_plate_candidates, bboxes = createCandidatePositions(license_plate)
+
+# license_plate_candidates, bboxes = sweepCandidates(createClustering(license_plate))
 
 # for i in range(len(license_plate_candidates)-1):
 #     print( license_plate_candidates[i].shape )

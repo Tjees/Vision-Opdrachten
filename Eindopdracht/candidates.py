@@ -71,13 +71,29 @@ def createClustering( img ):
     Z = np.float32(Z)
     # define criteria, number of clusters(K) and apply kmeans()
     criteria = (cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, 10, 1.0)
-    K = 2
-    ret,label,center=cv.kmeans(Z,K,None,criteria,10,cv.KMEANS_RANDOM_CENTERS)
+    K = 10
+    ret,labels,centers=cv.kmeans(Z,K,None,criteria,10,cv.KMEANS_RANDOM_CENTERS)
     # Now convert back into uint8, and make original image
-    center = np.uint8(center)
-    center[0] = [0,0,0]
-    center[1] = [255,255,255]
-    res = center[label.flatten()]
+    centers = np.uint8(centers)
+    print(centers)
+    print(labels)
+    print(centers[labels[0][0]])
+    # centers[0] = [0,0,0]
+    # centers[1] = [255,255,255]
+
+    # thresWhite = list(centers[3])
+    thresWhite = [100,100,100]
+    thresYellow = [150,150,50]
+    for i in range(len(centers)):
+        center = list(centers[i])
+        if center[0] > thresWhite[0] and center[1] > thresWhite[1] and center[2] > thresWhite[2]:
+            centers[i] = [255,255,255]
+        elif center[0] > thresYellow[0] and center[1] > thresYellow[1] and center[2] < thresYellow[2]:
+            centers[i] = [255,255,0]
+        else:
+            centers[i] = [0,0,0]
+
+    res = centers[labels.flatten()]
     res = res.reshape((img.shape))
     
     return res
@@ -85,8 +101,11 @@ def createClustering( img ):
 def createCandidatePositions(img):
     candidates = []
     bboxes = []
+    
+    clusteredImage = createClustering(img)
+
     # convert image to grayscale image
-    gray_image = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+    gray_image = cv.cvtColor(clusteredImage, cv.COLOR_RGB2GRAY)
 
     # for i in range(10):
     #     cv.GaussianBlur(gray_image,(5,5),0)
@@ -99,7 +118,7 @@ def createCandidatePositions(img):
     kernelErode = np.ones((int(img.shape[1]*0.005),int(img.shape[0]*0.0065)),np.uint8)
     closing = cv.morphologyEx(gray_image, cv.MORPH_CLOSE, kernelClose)
     closing = cv.morphologyEx(closing, cv.MORPH_ERODE, kernelErode)
-    closing = createClustering(closing)
+    # closing = createClustering(closing)
 
     edges = cv.Canny(closing,400,425,apertureSize = 3)
 
