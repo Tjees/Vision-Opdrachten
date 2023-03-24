@@ -38,7 +38,7 @@ classifier.compile(
     loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
     metrics=['acc'])
 
-license_plate = cv.imread('C:/Users/tjezv/OneDrive/Desktop/Vision Opdrachten/Transfer Test/car.jpg')
+license_plate = cv.imread('C:/Users/tjezv/OneDrive/Desktop/Vision Opdrachten/Transfer Test/car9.jpg')
 license_plate = cv.cvtColor(license_plate, cv.COLOR_BGR2RGB)
 
 # license_plate = cv.resize(license_plate, (1920,1080), cv.INTER_AREA)
@@ -76,17 +76,17 @@ print(results)
 #     results.append( classifier.predict(license_plate_candidate[np.newaxis, ...])[0] )
 #     bboxesResults.append( bboxes[i] )
 
-# maxIndex = np.where(results == np.max(results))[0][0]
-# print(maxIndex)
-# print(results[maxIndex])
-# if results[maxIndex] > 0.5:
-#     cv.rectangle( license_plate, (bboxes[maxIndex][0], bboxes[maxIndex][2]), (bboxes[maxIndex][1], bboxes[maxIndex][3]), (255,0,0), 3 )
+maxIndex = np.where(results == np.max(results))[0][0]
+print(maxIndex)
+print(results[maxIndex])
+if results[maxIndex] > 0.5:
+    cv.rectangle( license_plate, (bboxes[maxIndex][0], bboxes[maxIndex][2]), (bboxes[maxIndex][1], bboxes[maxIndex][3]), (255,0,0), 3 )
 # break
 
-for i in range(len(results)):
-    if results[i][0] > 0.6:
-        cv.rectangle( license_plate, (bboxes[i][0], bboxes[i][2]), (bboxes[i][1], bboxes[i][3]), (255,0,0), 3 )
-        print(results[i][0])
+# for i in range(len(results)):
+#     if results[i][0] > 0.6:
+#         cv.rectangle( license_plate, (bboxes[i][0], bboxes[i][2]), (bboxes[i][1], bboxes[i][3]), (255,0,0), 3 )
+#         print(results[i][0])
 
 # result = classifier.predict(license_plate_candidate[np.newaxis, ...])
 
