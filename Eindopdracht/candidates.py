@@ -111,6 +111,27 @@ def createClustering( img ):
     
     return res
 
+def createClustering2(img):
+    Z = img.reshape((-1,3))
+    Z = np.float32(Z)
+
+    criteria = (cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, 10, 1.0)
+    K = 10
+    ret,labels,centers=cv.kmeans(Z,K,None,criteria,10,cv.KMEANS_RANDOM_CENTERS)
+
+    # Create separate images for each cluster above the white threshold
+    thresWhite = [100, 100, 100]
+    white_clusters = [] # Clusters/Centers die boven de threshold zitten als aparte afbeeldingen in een array.
+    for i in range(len(centers)):
+        center = list(centers[i])
+        if center[0] > thresWhite[0] and center[1] > thresWhite[1] and center[2] > thresWhite[2]: # Checken of geselecteerde center boven de threshold ligt.
+            binary_image = np.zeros(labels.shape, dtype=np.uint8) # Lege image maken.
+            # OpenCV gebrukt grayscale waardes van 0-255 en niet van 0-1.
+            binary_image[labels == i] = 255 # Waardes naar 255 zetten voor elke pixel waar de label overeenkomt met de label van de geselecteerde center.
+            white_clusters.append(binary_image) # Afbeelding toevoegen aan de lijst van images die boven de threshold liggen.
+
+    return white_clusters
+
 def createCandidatePositions(img):
     candidates = []
     bboxes = []
