@@ -13,6 +13,8 @@ from keras.models import Sequential
 from keras.models import load_model
 from keras.models import model_from_json
 
+import urllib.request
+
 def compute_overlap(box1, box2):
     x1 = max(box1[0], box2[0])
     y1 = max(box1[1], box2[1])
@@ -87,11 +89,19 @@ classifier.compile(
     loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
     metrics=['acc'])
 
+# url = 'http://192.168.68.127/cam-lo.jpg'
+
 vid = cv.VideoCapture(0)
 
 while(True):
 
     ret, license_plate = vid.read()
+
+    # imgResp = urllib.request.urlopen(url)
+    # imgNp = np.array(bytearray(imgResp.read()),dtype=np.uint8)
+    # license_plate = cv.imdecode(imgNp, -1)
+
+    print(license_plate.shape)
 
     # license_plate = cv.imread('C:/Users/tjezv/OneDrive/Desktop/Vision Opdrachten/Transfer Test/car3.jpg')
     # license_plate = cv.cvtColor(license_plate, cv.COLOR_BGR2RGB)
@@ -115,15 +125,28 @@ while(True):
 
     # print(license_plate_candidates[0].shape)
 
-    convertedCandidates = []
-    for i in range(len(license_plate_candidates_NMS)-1):
-        convertedCandidates.append(convertBBoxImage(license_plate_candidates_NMS[i], (224,224)))
+    if license_plate_candidates_NMS.shape[0] > 2:
+        convertedCandidates = []
+        for i in range(len(license_plate_candidates_NMS)-1):
+            convertedCandidates.append(convertBBoxImage(license_plate_candidates_NMS[i], (224,224)))
 
-    license_plate_candidates_NMS = np.array(convertedCandidates)/255.0
+        license_plate_candidates_NMS = np.array(convertedCandidates)/255.0
 
-    # print(license_plate_candidates.shape)
+        # print(license_plate_candidates.shape)
 
-    results = classifier.predict(license_plate_candidates_NMS)
+        results = classifier.predict(license_plate_candidates_NMS)
+
+        maxIndex = np.where(results == np.max(results))[0][0]
+        print(maxIndex)
+        print(results[maxIndex])
+        if results[maxIndex] > 0.6:
+            cv.rectangle( license_plate, (bboxes_NMS[maxIndex][0], bboxes_NMS[maxIndex][2]), (bboxes_NMS[maxIndex][1], bboxes_NMS[maxIndex][3]), (255,0,0), 3 )
+        # break
+
+        # for i in range(len(results)):
+        #     if results[i][0] > 0.8:
+        #         cv.rectangle( license_plate, (bboxes[i][0], bboxes[i][2]), (bboxes[i][1], bboxes[i][3]), (255,0,0), 3 )
+        #         print(results[i][0])
 
     # print(results)
 
@@ -136,18 +159,6 @@ while(True):
     #     print(license_plate_candidate.shape)
     #     results.append( classifier.predict(license_plate_candidate[np.newaxis, ...])[0] )
     #     bboxesResults.append( bboxes[i] )
-
-    maxIndex = np.where(results == np.max(results))[0][0]
-    print(maxIndex)
-    print(results[maxIndex])
-    if results[maxIndex] > 0.6:
-        cv.rectangle( license_plate, (bboxes_NMS[maxIndex][0], bboxes_NMS[maxIndex][2]), (bboxes_NMS[maxIndex][1], bboxes_NMS[maxIndex][3]), (255,0,0), 3 )
-    # break
-
-    # for i in range(len(results)):
-    #     if results[i][0] > 0.6:
-    #         cv.rectangle( license_plate, (bboxes[i][0], bboxes[i][2]), (bboxes[i][1], bboxes[i][3]), (255,0,0), 3 )
-    #         print(results[i][0])
 
     # result = classifier.predict(license_plate_candidate[np.newaxis, ...])
 
@@ -171,6 +182,6 @@ while(True):
         break
 
 # After the loop release the cap object
-vid.release()
+license_plate.release()
 # Destroy all the windows
 cv.destroyAllWindows()
