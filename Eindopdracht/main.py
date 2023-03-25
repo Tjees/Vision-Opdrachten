@@ -24,12 +24,7 @@ def compute_overlap(box1, box2):
     box1_area = (box1[2] - box1[0] + 1) * (box1[3] - box1[1] + 1)
     box2_area = (box2[2] - box2[0] + 1) * (box2[3] - box2[1] + 1)
 
-    x = float(box1_area + box2_area - intersection_area)
-
-    if x > 0: 
-        overlap_ratio = intersection_area / x
-    else:
-        overlap_ratio = 0
+    overlap_ratio = intersection_area / float(box1_area + box2_area - intersection_area + 1e-9)
 
     return overlap_ratio
 
@@ -45,29 +40,27 @@ def non_max_suppression(candidates, bboxes, overlap_thres):
     sorted_bboxes = bboxes[sorted_indices]
     sorted_candidates = candidates[sorted_indices]
 
-    sorted_bboxes_copy = np.copy(sorted_bboxes)
-    sorted_candidates_copy = np.copy(sorted_candidates)
-
     picked_bboxes = []
     picked_candidates = []
 
-    num_boxes = len(bboxes)
-
-    for i in range(num_boxes):
-        picked_bboxes.append(sorted_bboxes[i])
-        picked_candidates.append(sorted_candidates[i])
+    for i in range(len(sorted_bboxes)):
+        if i >= len(sorted_bboxes):
+            break
 
         overlapping_boxes = []
-        for j in range(i+1, num_boxes):
-            if compute_overlap(sorted_bboxes_copy[i], sorted_bboxes_copy[j]) > overlap_thres:
+        for j in range(i+1, len(sorted_bboxes)):
+            if compute_overlap(sorted_bboxes[i], sorted_bboxes[j]) > overlap_thres:
                 overlapping_boxes.append(j)
 
-        sorted_bboxes_copy = np.delete(sorted_bboxes_copy, overlapping_boxes, axis=0)
-        sorted_candidates_copy = np.delete(sorted_candidates_copy, overlapping_boxes, axis=0)
+        sorted_bboxes = np.delete(sorted_bboxes, overlapping_boxes, axis=0)
+        sorted_candidates = np.delete(sorted_candidates, overlapping_boxes, axis=0)
 
-        num_boxes -= len(overlapping_boxes)
+    picked_bboxes = sorted_bboxes
+    picked_candidates = sorted_candidates
 
-    return np.array(picked_candidates), np.array(picked_bboxes)
+    picked_candidates, picked_bboxes = np.array(picked_candidates), np.array(picked_bboxes)
+
+    return picked_candidates, picked_bboxes
 
 # Notes:
 # Bij de predict, i.p.v. de index van de label op te zoeken op basis van de hoogste waarde ( meerdere classes ), dus softmax,
@@ -107,7 +100,9 @@ while(True):
 
     license_plate_candidates, bboxes = createCandidatePositions(license_plate)
 
-    license_plate_candidates_NMS, bboxes_NMS = non_max_suppression(license_plate_candidates,bboxes,0.75)
+    print(license_plate_candidates.shape)
+
+    license_plate_candidates_NMS, bboxes_NMS = non_max_suppression(license_plate_candidates,bboxes,0.05)
 
     print(license_plate_candidates_NMS.shape)
 
